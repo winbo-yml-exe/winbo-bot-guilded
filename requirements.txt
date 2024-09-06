@@ -1,0 +1,4 @@
+nextcord
+psutil
+requests
+setuptools
