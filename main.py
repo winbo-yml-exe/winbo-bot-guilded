@@ -80,50 +80,35 @@ with open("staff.txt", "r", encoding="utf-8") as stafffile:
 async def on_ready():
     print(f"Logged in as {client.user.name}")
 
-@client.event
 async def on_message(message):
-    if not message.author.bot and not message.content.startswith("/") and not str(message.author.id) in cgcdb["bans"]:
+    if not message.author.bot and not str(message.author.id) in cgcdb["bans"]:
         for server in serverdb:
             await send_message_to_servers(message, server)
+
 async def send_message_to_servers(message, server):
-        if str(message.channel.id) == str(serverdb[server]["cgcchannel"]):
-            for server in serverdb:
-                try:
-                    embed = nextcord.Embed(title=f"Message by {message.author}")
-                    channel = client.get_channel(int(serverdb[server]["cgcchannel"]))
-                    embed.description = message.content
-                    if str(message.author.id) == cgcdb["owner"]:
-                        embed.set_footer(text=f"{message.author} - Owner - {message.channel.guild.name}")
-                    elif str(message.author.id) in cgcdb["staff"]:
-                        embed.set_footer(text=f"{message.author} - Staff - {message.channel.guild.name}")
-                    else:
-                        embed.set_footer(text=f"{message.author} - {message.channel.guild.name}")                        
-                    if message.reference:
-                        reference = await message.channel.fetch_message(message.reference.message_id)
-                        if reference.embeds:
-                            embed.add_field(name=f"Original message by {reference.embeds[0].title.split(' ')[-1]}", value=reference.embeds[0].description)
-                        else:
-                            embed.add_field(name=f"Original message by {reference.author}", value=reference.content)
-                    if message.attachments:
-                        if message.attachments[-1].filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4')):
-                            await message.attachments[-1].save(message.attachments[-1].filename)
-                        if message.attachments[-1].filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
-                            attachment = nextcord.File(message.attachments[-1].filename, filename="image.gif")
-                            embed.set_image(url="attachment://image.gif")
-                            await channel.send(embed=embed, file=attachment)
-                        else:
-                            attachment = nextcord.File(message.attachments[-1].filename, filename="image.mp4")
-                            await channel.send(embed=embed, file=attachment)
-                        os.remove(message.attachments[-1].filename)
-                    else:
-                        await channel.send(embed=embed)
-                except Exception as excp:
-                    print(excp)
-                    pass
+    if str(message.channel.id) == str(serverdb[server]["cgcchannel"]):
+        for server in serverdb:
             try:
-                await message.delete()
-            except:
+                embed = guilded.Embed(title=f"Message by {message.author.name}")
+                channel = client.get_channel(int(serverdb[server]["cgcchannel"]))
+                embed.description = message.content
+                if str(message.author.id) == cgcdb["owner"]:
+                    embed.set_footer(text=f"{message.author.name} - Owner - {message.server.name}")
+                elif str(message.author.id) in cgcdb["staff"]:
+                    embed.set_footer(text=f"{message.author.name} - Staff - {message.server.name}")
+                else:
+                    embed.set_footer(text=f"{message.author.name} - {message.server.name}")
+                if message.attachments:
+                    embed.set_image(url=message.attachments[0].url)
+                await channel.send(embed=embed)
+            except Exception as excp:
+                print(excp)
                 pass
+        try:
+            await message.delete()
+        except:
+            pass
+
 @client.slash_command(name="ping", description="Replies with pong!")
 async def ping(interaction: nextcord.Interaction):
     await interaction.response.send_message(f"Pong 🏓 {client.latency * 1000:.2f}ms")
