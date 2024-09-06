@@ -1,4 +1,4 @@
-nextcord
+guilded.py
 psutil
 requests
 setuptools
