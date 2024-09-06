@@ -80,35 +80,6 @@ with open("staff.txt", "r", encoding="utf-8") as stafffile:
 async def on_ready():
     print(f"Logged in as {client.user.name}")
 
-async def on_message(message):
-    if not message.author.bot and not str(message.author.id) in cgcdb["bans"]:
-        for server in serverdb:
-            await send_message_to_servers(message, server)
-
-async def send_message_to_servers(message, server):
-    if str(message.channel.id) == str(serverdb[server]["cgcchannel"]):
-        for server in serverdb:
-            try:
-                embed = guilded.Embed(title=f"Message by {message.author.name}")
-                channel = client.get_channel(int(serverdb[server]["cgcchannel"]))
-                embed.description = message.content
-                if str(message.author.id) == cgcdb["owner"]:
-                    embed.set_footer(text=f"{message.author.name} - Owner - {message.server.name}")
-                elif str(message.author.id) in cgcdb["staff"]:
-                    embed.set_footer(text=f"{message.author.name} - Staff - {message.server.name}")
-                else:
-                    embed.set_footer(text=f"{message.author.name} - {message.server.name}")
-                if message.attachments:
-                    embed.set_image(url=message.attachments[0].url)
-                await channel.send(embed=embed)
-            except Exception as excp:
-                print(excp)
-                pass
-        try:
-            await message.delete()
-        except:
-            pass
-
 @client.command()
 async def ping(ctx):
     await ctx.send(f"Pong! 🏓 {round(client.latency * 1000)}ms")
@@ -206,7 +177,7 @@ async def askai(ctx, *, prompt: str):
         embed = guilded.Embed(color=guilded.Color.blue(), title="AI Response", description=response)
     await ctx.send(embed=embed)
 
-@client.command(name="unwarn", description="Removes a warn from a member")
+@client.command()
 async def unwarn(ctx, member: guilded.Member, warningreason: str):
     try:
         if serverdb[str(ctx.server.id)]:
@@ -237,70 +208,12 @@ async def unwarn(ctx, member: guilded.Member, warningreason: str):
         embed = guilded.Embed(color=0xff0000, title="Couldn't find such a warning", description=f"Couldn't find '{warningreason}' in {member.name}'s warnings.")
         await ctx.send(embed=embed)
 
-@client.command(name="clearwarns", description="Clears all warns given to a member")
+@client.command()
 async def clearwarns(ctx, member: guilded.Member):
     try:
         serverdb[str(ctx.server.id)]["warns"][str(member.id)] = []
         await ctx.send(f"Cleared all warnings for {member.mention}")
     except:
         await ctx.send(f"{member.mention} has no warnings")
-
-@client.group()
-async def cgc(ctx):
-    pass
-
-@cgc.command()
-async def set_cgc(ctx):
-    try:
-        if serverdb[str(ctx.server.id)]:
-            serverdb[str(ctx.server.id)]["cgcchannel"] = str(ctx.channel.id)
-        else:
-            serverdb[str(ctx.server.id)] = {}
-            serverdb[str(ctx.server.id)]["cgcchannel"] = str(ctx.channel.id)
-    except:
-        serverdb[str(ctx.server.id)] = {}
-        serverdb[str(ctx.server.id)]["cgcchannel"] = str(ctx.channel.id)
-    
-    await ctx.send("Set channel for CGC-chatting successfully!")
-    with open("serverdb.json", "w", encoding="utf-8") as sdbfile:
-        json.dump(serverdb, sdbfile, indent=2)
-
-@cgc.command()
-async def unset_cgc(ctx):
-    try:
-        serverdb[str(ctx.server.id)]["cgcchannel"] = "None"
-    except:
-        pass
-    await ctx.send("Unset channel for CGC-chatting successfully!")
-    with open("serverdb.json", "w", encoding="utf-8") as sdbfile:
-        json.dump(serverdb, sdbfile, indent=2)
-
-@cgc.command()
-async def ban_cgc(ctx, member: guilded.Member):
-    if str(ctx.author.id) in cgcdb["staff"] or str(ctx.author.id) == cgcdb["owner"]:
-        try:
-            if cgcdb:
-                try:
-                    if not cgcdb["bans"]:
-                        cgcdb["bans"] = []
-                except:
-                    cgcdb["bans"] = []
-        except:
-            pass
-        cgcdb["bans"].append(str(member.id))
-        with open("cgcdb.json", "w", encoding="utf-8") as cgcdbfile:
-            json.dump(cgcdb, cgcdbfile, indent=2)
-        await ctx.send(f"Banned {member.name}")
-
-@cgc.command()
-async def unban_cgc(ctx, member: guilded.Member):
-    if str(ctx.author.id) in cgcdb["staff"] or str(ctx.author.id) == cgcdb["owner"]:
-        try:
-            cgcdb["bans"].remove(str(member.id))
-            with open("cgcdb.json", "w", encoding="utf-8") as cgcdbfile:
-                json.dump(cgcdb, cgcdbfile, indent=2)
-            await ctx.send(f"Unbanned {member.name}.")
-        except:
-            await ctx.send(f"{member.name} is not banned.")
 
 client.run("TOKEN_GOES_HERE")
