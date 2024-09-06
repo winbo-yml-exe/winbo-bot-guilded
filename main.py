@@ -106,29 +106,40 @@ async def mute(ctx, member: guilded.Member, reason: str = "No reason provided"):
 async def unmute(ctx, member: guilded.Member):
     if ctx.author.has_permission("manageRoles"):
         mute_role = guilded.utils.get(ctx.guild.roles, name="Muted")
-        if mute_role in member.roles:
+        if mute_role and mute_role in member.roles:
             await member.remove_roles(mute_role)
             await ctx.send(f"Unmuted {member.mention}")
         else:
-            await ctx.send("Member is not muted.")
+            await ctx.send(f"{member.mention} is not muted or the mute role does not exist.")
     else:
         await ctx.send("You do not have permission to unmute members.")
 
 @client.command()
 async def ban(ctx, member: guilded.Member, reason: str = "No reason provided"):
     if ctx.author.has_permission("banMembers"):
-        await member.ban(reason=reason)
-        await ctx.send(f"Banned {member.mention} for {reason}")
+        try:
+            await member.ban(reason=reason)
+            await ctx.send(f"Banned {member.mention} for {reason}")
+        except Exception as e:
+            await ctx.send(f"Failed to ban {member.mention}. Error: {e}")
     else:
         await ctx.send("You do not have permission to ban members.")
 
 @client.command()
-async def unban(ctx, member: guilded.Member):
+async def unban(ctx, member_id: int):
     if ctx.author.has_permission("banMembers"):
-        await ctx.guild.unban(member)
-        await ctx.send(f"Unbanned {member.mention}")
+        try:
+            member = guilded.utils.get(ctx.guild.bans, user__id=member_id)
+            if member:
+                await ctx.guild.unban(member.user)
+                await ctx.send(f"Unbanned {member.user.mention}")
+            else:
+                await ctx.send("User is not banned.")
+        except Exception as e:
+            await ctx.send(f"Failed to unban. Error: {e}")
     else:
         await ctx.send("You do not have permission to unban members.")
+
     
 @client.command()
 async def purge(ctx, amount: int):
