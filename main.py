@@ -10,8 +10,7 @@ import psutil
 from datetime import datetime
 import requests
 
-intents = nextcord.Intents.all()
-client = commands.Bot(intents=intents)
+client = commands.Bot(command_prefix="w!")
 serverdb = {}
 cgcdb = {}
 sad_stories = [
