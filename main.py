@@ -142,12 +142,16 @@ async def unban(ctx, member_id: int):
 
     
 @client.command()
-async def purge(ctx, amount: int):
+async def purge(ctx, limit: int = 100):
     if ctx.author.has_permission("manageMessages"):
-        deleted = await ctx.channel.purge(limit=amount + 1)
-        await ctx.send(f"Deleted {len(deleted) - 1} messages.")
+        try:
+            deleted = await ctx.channel.purge(limit=limit)
+            await ctx.send(f"Deleted {len(deleted)} messages.", delete_after=5)
+        except Exception as e:
+            await ctx.send(f"Failed to purge messages. Error: {e}")
     else:
         await ctx.send("You do not have permission to manage messages.")
+
 
 @client.command()
 async def warn(ctx, member: guilded.Member, reason: str):
