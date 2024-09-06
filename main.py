@@ -72,9 +72,6 @@ with open("owner.txt", "r", encoding="utf-8") as ownerfile:
 with open("staff.txt", "r", encoding="utf-8") as stafffile:
     staff = str(stafffile.read().rstrip()).split(", ")
     cgcdb["staff"] = staff
-    with open("cgcdb.json", "w", encoding="utf-8") as cgcdbfile:
-        json.dump(cgcdb, cgcdbfile, indent=2)
-        print(f"Loaded staff.txt ({staff})")
 
 @client.event
 async def on_ready():
