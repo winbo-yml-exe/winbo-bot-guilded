@@ -3,8 +3,8 @@ import json
 import os
 import glob
 from pathlib import Path
-import nextcord
-from nextcord.ext import commands
+import guilded
+from guilded.ext import commands
 import platform
 import psutil
 from datetime import datetime
